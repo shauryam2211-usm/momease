@@ -1,16 +1,16 @@
 /**
- * MomEase Animations - Production JavaScript
+ * MomEase Animations - Vanilla JavaScript Animation System
+ * Apple-style smooth animations without external dependencies
  *
  * Features:
- * - GSAP ScrollTrigger for scroll-based animations
- * - Intersection Observer for performance
+ * - Intersection Observer for scroll animations
  * - Parallax effects
- * - Lazy loading for images
- * - Accessibility support (prefers-reduced-motion)
- * - Modular, maintainable code structure
+ * - Hero text reveal
+ * - Smooth scrolling
+ * - Mobile-optimized performance
  *
  * @author MomEase Team
- * @version 1.0.0
+ * @version 2.0.0
  */
 
 (function() {
@@ -22,18 +22,11 @@
   const CONFIG = {
     reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
     isMobile: window.innerWidth < 768,
-
-    // Intersection Observer thresholds - trigger earlier for more dramatic effect
+    
+    // Intersection Observer options
     observerOptions: {
-      threshold: 0.05,
-      rootMargin: '0px 0px 50px 0px'
-    },
-
-    // Animation defaults
-    scrollTriggerDefaults: {
-      start: 'top 80%',
-      end: 'bottom 20%',
-      toggleActions: 'play none none reverse'
+      threshold: 0.1,
+      rootMargin: '0px 0px -100px 0px'
     }
   };
 
@@ -42,25 +35,7 @@
   // ============================================
 
   /**
-   * Check if element is in viewport
-   * @param {Element} el - DOM element
-   * @returns {boolean}
-   */
-  function isInViewport(el) {
-    const rect = el.getBoundingClientRect();
-    return (
-      rect.top >= 0 &&
-      rect.left >= 0 &&
-      rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-      rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-    );
-  }
-
-  /**
    * Debounce function for performance
-   * @param {Function} func - Function to debounce
-   * @param {number} wait - Wait time in ms
-   * @returns {Function}
    */
   function debounce(func, wait = 100) {
     let timeout;
@@ -75,79 +50,139 @@
   }
 
   /**
-   * Request Animation Frame wrapper for smooth animations
-   * @param {Function} callback
+   * Linear interpolation
    */
-  function smoothRaf(callback) {
-    if (!CONFIG.reducedMotion) {
-      requestAnimationFrame(callback);
-    } else {
-      callback();
-    }
+  function lerp(start, end, factor) {
+    return start + (end - start) * factor;
+  }
+
+  /**
+   * Map value from one range to another
+   */
+  function mapRange(value, inMin, inMax, outMin, outMax) {
+    return outMin + (outMax - outMin) * (value - inMin) / (inMax - inMin);
   }
 
   // ============================================
-  // LAZY LOADING IMAGES
+  // HERO SLIDESHOW
   // ============================================
-
-  class LazyLoader {
+  class HeroSlideshow {
     constructor() {
-      this.images = document.querySelectorAll('img[data-src], img[loading="lazy"]');
+      this.slides = document.querySelectorAll('.hero-slide');
+      this.currentSlide = 0;
+      this.slideInterval = 4000; // 4 seconds
+      this.intervalId = null;
       this.init();
     }
 
     init() {
-      if ('IntersectionObserver' in window) {
-        this.observer = new IntersectionObserver(
-          (entries) => this.handleIntersection(entries),
-          { rootMargin: '50px 0px' }
-        );
+      if (this.slides.length <= 1) return;
 
-        this.images.forEach(img => {
-          this.observer.observe(img);
-          // Add blur-up effect
-          img.style.filter = 'blur(10px)';
-          img.style.transition = 'filter 0.3s ease-in-out';
-        });
-      } else {
-        // Fallback for older browsers
-        this.loadAllImages();
+      // Start automatic slideshow
+      this.startSlideshow();
+
+      // Pause on reduced motion preference
+      if (CONFIG.reducedMotion) {
+        this.stopSlideshow();
       }
     }
 
-    handleIntersection(entries) {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const img = entry.target;
-          this.loadImage(img);
-          this.observer.unobserve(img);
+    startSlideshow() {
+      this.intervalId = setInterval(() => {
+        this.nextSlide();
+      }, this.slideInterval);
+    }
+
+    stopSlideshow() {
+      if (this.intervalId) {
+        clearInterval(this.intervalId);
+        this.intervalId = null;
+      }
+    }
+
+    nextSlide() {
+      // Remove active class from current slide
+      this.slides[this.currentSlide].classList.remove('active');
+
+      // Move to next slide
+      this.currentSlide = (this.currentSlide + 1) % this.slides.length;
+
+      // Add active class to new slide
+      this.slides[this.currentSlide].classList.add('active');
+    }
+
+    // Public method to go to specific slide
+    goToSlide(index) {
+      if (index < 0 || index >= this.slides.length) return;
+
+      this.slides[this.currentSlide].classList.remove('active');
+      this.currentSlide = index;
+      this.slides[this.currentSlide].classList.add('active');
+    }
+  }
+
+  // ============================================
+  // HERO TEXT ANIMATION
+  // ============================================
+  class HeroAnimation {
+    constructor() {
+      this.heroTitle = document.getElementById('hero-title');
+      this.heroSubtitle = document.getElementById('hero-subtitle');
+      this.heroButtons = document.getElementById('hero-buttons');
+      this.init();
+    }
+
+    init() {
+      if (CONFIG.reducedMotion) {
+        this.showImmediately();
+        return;
+      }
+
+      // Animate hero elements with stagger
+      setTimeout(() => {
+        if (this.heroTitle) {
+          this.heroTitle.style.opacity = '1';
+          this.heroTitle.style.transform = 'translateY(0) scale(1)';
+          this.heroTitle.style.transition = 'all 1s cubic-bezier(0.33, 1, 0.68, 1)';
         }
-      });
+      }, 100);
+
+      setTimeout(() => {
+        if (this.heroSubtitle) {
+          this.heroSubtitle.style.opacity = '1';
+          this.heroSubtitle.style.transform = 'translateY(0)';
+          this.heroSubtitle.style.transition = 'all 0.8s cubic-bezier(0.33, 1, 0.68, 1)';
+        }
+      }, 400);
+
+      setTimeout(() => {
+        if (this.heroButtons) {
+          this.heroButtons.style.opacity = '1';
+          this.heroButtons.style.transform = 'translateY(0)';
+          this.heroButtons.style.transition = 'all 0.8s cubic-bezier(0.33, 1, 0.68, 1)';
+        }
+      }, 700);
     }
 
-    loadImage(img) {
-      const src = img.dataset.src || img.src;
-      const tempImg = new Image();
-
-      tempImg.onload = () => {
-        img.src = src;
-        img.removeAttribute('data-src');
-        img.style.filter = 'blur(0)';
-        img.classList.add('loaded');
-      };
-
-      tempImg.src = src;
-    }
-
-    loadAllImages() {
-      this.images.forEach(img => this.loadImage(img));
+    showImmediately() {
+      if (this.heroTitle) {
+        this.heroTitle.style.opacity = '1';
+        this.heroTitle.style.transform = 'none';
+      }
+      if (this.heroSubtitle) {
+        this.heroSubtitle.style.opacity = '1';
+        this.heroSubtitle.style.transform = 'none';
+      }
+      if (this.heroButtons) {
+        this.heroButtons.style.opacity = '1';
+        this.heroButtons.style.transform = 'none';
+      }
     }
   }
 
   // ============================================
   // SCROLL REVEAL ANIMATIONS
   // ============================================
-
   class ScrollReveal {
     constructor() {
       this.elements = document.querySelectorAll('.scroll-reveal');
@@ -156,20 +191,16 @@
 
     init() {
       if (CONFIG.reducedMotion) {
-        // Skip animations if reduced motion is preferred
-        this.elements.forEach(el => el.classList.add('scroll-reveal--active'));
+        this.elements.forEach(el => el.classList.add('active'));
         return;
       }
 
-      // Use Intersection Observer for better performance
       this.observer = new IntersectionObserver(
         (entries) => this.handleIntersection(entries),
         CONFIG.observerOptions
       );
 
       this.elements.forEach(el => {
-        // Add GPU acceleration hint
-        el.classList.add('will-animate');
         this.observer.observe(el);
       });
     }
@@ -177,76 +208,18 @@
     handleIntersection(entries) {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
-          const el = entry.target;
-
-          // Add active class to trigger animation
-          el.classList.add('scroll-reveal--active');
-
-          // Remove will-change after animation completes
-          setTimeout(() => {
-            el.classList.remove('will-animate');
-            el.classList.add('will-animate-complete');
-          }, 800);
-
+          entry.target.classList.add('active');
+          
           // Stop observing once animated
-          this.observer.unobserve(el);
+          this.observer.unobserve(entry.target);
         }
       });
     }
   }
 
   // ============================================
-  // STAGGER ANIMATIONS
+  // PARALLAX EFFECT
   // ============================================
-
-  class StaggerAnimation {
-    constructor() {
-      this.containers = document.querySelectorAll('[data-stagger]');
-      this.init();
-    }
-
-    init() {
-      if (CONFIG.reducedMotion) {
-        this.containers.forEach(container => {
-          const items = container.querySelectorAll('.stagger-item');
-          items.forEach(item => item.classList.add('stagger-item--active'));
-        });
-        return;
-      }
-
-      this.observer = new IntersectionObserver(
-        (entries) => this.handleIntersection(entries),
-        CONFIG.observerOptions
-      );
-
-      this.containers.forEach(container => this.observer.observe(container));
-    }
-
-    handleIntersection(entries) {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const container = entry.target;
-          const items = container.querySelectorAll('.stagger-item');
-
-          items.forEach((item, index) => {
-            // Add stagger class for animation delay
-            item.classList.add(`stagger-item--${Math.min(index + 1, 4)}`);
-
-            setTimeout(() => {
-              item.classList.add('stagger-item--active');
-            }, 50); // Small delay to ensure CSS is applied
-          });
-
-          this.observer.unobserve(container);
-        }
-      });
-    }
-  }
-
-  // ============================================
-  // PARALLAX EFFECTS
-  // ============================================
-
   class ParallaxEffect {
     constructor() {
       this.elements = document.querySelectorAll('.parallax');
@@ -260,12 +233,11 @@
       }
 
       window.addEventListener('scroll', () => this.handleScroll(), { passive: true });
-      this.update();
     }
 
     handleScroll() {
       if (!this.ticking) {
-        smoothRaf(() => this.update());
+        requestAnimationFrame(() => this.update());
         this.ticking = true;
       }
     }
@@ -280,7 +252,6 @@
         const distance = scrollY - elementY;
         const offset = distance * speed;
 
-        // Use transform for GPU acceleration
         el.style.transform = `translate3d(0, ${offset}px, 0)`;
       });
 
@@ -289,63 +260,11 @@
   }
 
   // ============================================
-  // HOVER TILT EFFECT (3D)
-  // ============================================
-
-  class HoverTilt {
-    constructor() {
-      this.elements = document.querySelectorAll('.hover-tilt');
-      this.init();
-    }
-
-    init() {
-      if (CONFIG.reducedMotion || CONFIG.isMobile) {
-        return;
-      }
-
-      this.elements.forEach(el => {
-        el.addEventListener('mouseenter', (e) => this.handleMouseEnter(e));
-        el.addEventListener('mousemove', (e) => this.handleMouseMove(e));
-        el.addEventListener('mouseleave', (e) => this.handleMouseLeave(e));
-      });
-    }
-
-    handleMouseEnter(e) {
-      const el = e.currentTarget;
-      el.style.transition = 'none';
-    }
-
-    handleMouseMove(e) {
-      const el = e.currentTarget;
-      const rect = el.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-
-      const rotateX = ((y - centerY) / centerY) * -10;
-      const rotateY = ((x - centerX) / centerX) * 10;
-
-      smoothRaf(() => {
-        el.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
-      });
-    }
-
-    handleMouseLeave(e) {
-      const el = e.currentTarget;
-      el.style.transition = 'transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)';
-      el.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
-    }
-  }
-
-  // ============================================
   // NAVBAR SCROLL EFFECT
   // ============================================
-
   class NavbarScroll {
     constructor() {
-      this.navbar = document.querySelector('nav');
+      this.navbar = document.getElementById('navbar');
       this.lastScroll = 0;
       this.init();
     }
@@ -356,10 +275,10 @@
       const handleScroll = debounce(() => {
         const currentScroll = window.pageYOffset;
 
-        if (currentScroll > 100) {
-          this.navbar.classList.add('nav-scrolled');
+        if (currentScroll > 50) {
+          this.navbar.classList.add('scrolled');
         } else {
-          this.navbar.classList.remove('nav-scrolled');
+          this.navbar.classList.remove('scrolled');
         }
 
         this.lastScroll = currentScroll;
@@ -370,138 +289,8 @@
   }
 
   // ============================================
-  // GSAP SCROLL ANIMATIONS (if GSAP is loaded)
-  // ============================================
-
-  class GSAPAnimations {
-    constructor() {
-      this.gsapLoaded = typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined';
-      this.init();
-    }
-
-    init() {
-      if (!this.gsapLoaded || CONFIG.reducedMotion) {
-        return;
-      }
-
-      // Register ScrollTrigger plugin
-      gsap.registerPlugin(ScrollTrigger);
-
-      this.initHeroAnimation();
-      this.initSectionAnimations();
-      this.initFeatureCards();
-    }
-
-    initHeroAnimation() {
-      const heroHeading = document.querySelector('#hero h1');
-      const heroText = document.querySelector('#hero p');
-      const heroButtons = document.querySelectorAll('#hero a');
-      const heroImage = document.querySelector('#hero img');
-
-      if (!heroHeading) return;
-
-      // Animate hero elements with more dramatic effects (without text splitting to preserve HTML)
-      gsap.timeline()
-        .from(heroHeading, {
-          duration: 1.2,
-          opacity: 0,
-          y: 100,
-          scale: 0.8,
-          ease: 'back.out(1.7)'
-        })
-        .from(heroText, {
-          duration: 0.9,
-          opacity: 0,
-          y: 60,
-          scale: 0.9,
-          ease: 'power3.out'
-        }, '-=0.6')
-        .from(heroButtons, {
-          duration: 0.8,
-          opacity: 0,
-          y: 40,
-          scale: 0.9,
-          stagger: 0.15,
-          ease: 'back.out(1.5)'
-        }, '-=0.4')
-        .from(heroImage, {
-          duration: 1.4,
-          opacity: 0,
-          scale: 0.7,
-          rotation: -10,
-          ease: 'elastic.out(1, 0.5)'
-        }, '-=1.2');
-    }
-
-    initSectionAnimations() {
-      // Animate section headings with more impact
-      const sectionHeadings = document.querySelectorAll('section h2');
-
-      sectionHeadings.forEach(heading => {
-        gsap.from(heading, {
-          scrollTrigger: {
-            trigger: heading,
-            start: 'top 85%',
-            toggleActions: 'play none none reverse'
-          },
-          duration: 1.2,
-          opacity: 0,
-          y: 80,
-          scale: 0.8,
-          ease: 'back.out(1.7)'
-        });
-      });
-    }
-
-    initFeatureCards() {
-      // Animate feature cards with dramatic stagger
-      const featureSections = document.querySelectorAll('#features .grid, #problem .grid');
-
-      featureSections.forEach(grid => {
-        const cards = grid.querySelectorAll('> div');
-
-        gsap.from(cards, {
-          scrollTrigger: {
-            trigger: grid,
-            start: 'top 80%',
-            toggleActions: 'play none none reverse'
-          },
-          duration: 1,
-          opacity: 0,
-          y: 100,
-          scale: 0.8,
-          rotation: -5,
-          stagger: 0.2,
-          ease: 'back.out(1.4)'
-        });
-      });
-    }
-
-    // Add parallax to images
-    initParallaxImages() {
-      const images = document.querySelectorAll('[data-parallax]');
-
-      images.forEach(img => {
-        const speed = parseFloat(img.dataset.parallax) || 0.5;
-
-        gsap.to(img, {
-          y: () => -100 * speed,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: img,
-            start: 'top bottom',
-            end: 'bottom top',
-            scrub: true
-          }
-        });
-      });
-    }
-  }
-
-  // ============================================
   // SMOOTH SCROLL FOR ANCHOR LINKS
   // ============================================
-
   class SmoothScroll {
     constructor() {
       this.links = document.querySelectorAll('a[href^="#"]');
@@ -517,29 +306,226 @@
     handleClick(e) {
       e.preventDefault();
       const targetId = e.currentTarget.getAttribute('href');
+      
+      if (targetId === '#') return;
+      
       const target = document.querySelector(targetId);
 
       if (target) {
-        const offsetTop = target.getBoundingClientRect().top + window.pageYOffset - 80;
+        const navHeight = 80;
+        const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - navHeight;
 
         window.scrollTo({
-          top: offsetTop,
+          top: targetPosition,
           behavior: CONFIG.reducedMotion ? 'auto' : 'smooth'
         });
-
-        // Close mobile menu if open
-        const mobileMenu = document.getElementById('mobile-menu');
-        if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
-          mobileMenu.classList.add('hidden');
-        }
       }
+    }
+  }
+
+  // ============================================
+  // STAGGER ANIMATION
+  // ============================================
+  class StaggerAnimation {
+    constructor() {
+      this.init();
+    }
+
+    init() {
+      // Find all grid containers
+      const grids = document.querySelectorAll('.grid');
+      
+      grids.forEach(grid => {
+        const cards = grid.querySelectorAll('.card');
+        
+        cards.forEach((card, index) => {
+          // Add stagger delay class
+          const delayClass = `stagger-delay-${Math.min(index + 1, 5)}`;
+          
+          // If card already has scroll-reveal, add the delay
+          if (card.classList.contains('scroll-reveal')) {
+            card.classList.add(delayClass);
+          }
+        });
+      });
+    }
+  }
+
+  // ============================================
+  // CARD HOVER EFFECTS
+  // ============================================
+  class CardHoverEffects {
+    constructor() {
+      this.cards = document.querySelectorAll('.card');
+      this.init();
+    }
+
+    init() {
+      if (CONFIG.reducedMotion) return;
+
+      this.cards.forEach(card => {
+        // Add hover class for CSS transitions
+        card.classList.add('card-hover');
+
+        // Add subtle tilt on mouse move (desktop only)
+        if (!CONFIG.isMobile) {
+          card.addEventListener('mousemove', (e) => this.handleMouseMove(e, card));
+          card.addEventListener('mouseleave', () => this.handleMouseLeave(card));
+        }
+      });
+    }
+
+    handleMouseMove(e, card) {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      
+      const rotateX = (y - centerY) / 20;
+      const rotateY = (centerX - x) / 20;
+      
+      card.style.transform = `
+        translateY(-12px) 
+        perspective(1000px) 
+        rotateX(${rotateX}deg) 
+        rotateY(${rotateY}deg)
+        scale(1.02)
+      `;
+    }
+
+    handleMouseLeave(card) {
+      card.style.transform = '';
+    }
+  }
+
+  // ============================================
+  // BUTTON HOVER EFFECTS
+  // ============================================
+  class ButtonHoverEffects {
+    constructor() {
+      this.buttons = document.querySelectorAll('.btn');
+      this.init();
+    }
+
+    init() {
+      this.buttons.forEach(btn => {
+        btn.classList.add('btn-hover');
+      });
+    }
+  }
+
+  // ============================================
+  // LAZY LOADING (for future images)
+  // ============================================
+  class LazyLoader {
+    constructor() {
+      this.images = document.querySelectorAll('img[data-src]');
+      this.init();
+    }
+
+    init() {
+      if ('IntersectionObserver' in window) {
+        this.observer = new IntersectionObserver(
+          (entries) => this.handleIntersection(entries),
+          { rootMargin: '50px' }
+        );
+
+        this.images.forEach(img => this.observer.observe(img));
+      } else {
+        this.loadAllImages();
+      }
+    }
+
+    handleIntersection(entries) {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const img = entry.target;
+          this.loadImage(img);
+          this.observer.unobserve(img);
+        }
+      });
+    }
+
+    loadImage(img) {
+      const src = img.dataset.src;
+      if (src) {
+        img.src = src;
+        img.removeAttribute('data-src');
+      }
+    }
+
+    loadAllImages() {
+      this.images.forEach(img => this.loadImage(img));
+    }
+  }
+
+  // ============================================
+  // CURSOR GLOW EFFECT (Desktop only)
+  // ============================================
+  class CursorGlow {
+    constructor() {
+      this.cursorGlow = null;
+      this.mouseX = 0;
+      this.mouseY = 0;
+      this.currentX = 0;
+      this.currentY = 0;
+      this.init();
+    }
+
+    init() {
+      // Only enable on desktop with no reduced motion
+      if (CONFIG.isMobile || CONFIG.reducedMotion) return;
+
+      // Create cursor glow element
+      this.cursorGlow = document.createElement('div');
+      this.cursorGlow.style.cssText = `
+        position: fixed;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255, 69, 177, 0.15) 0%, transparent 70%);
+        pointer-events: none;
+        z-index: 9999;
+        transform: translate(-50%, -50%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      `;
+      document.body.appendChild(this.cursorGlow);
+
+      // Track mouse movement
+      document.addEventListener('mousemove', (e) => {
+        this.mouseX = e.clientX;
+        this.mouseY = e.clientY;
+        this.cursorGlow.style.opacity = '1';
+      });
+
+      document.addEventListener('mouseleave', () => {
+        this.cursorGlow.style.opacity = '0';
+      });
+
+      // Smooth animation loop
+      this.animate();
+    }
+
+    animate() {
+      // Smooth lerp for cursor trail effect
+      this.currentX = lerp(this.currentX, this.mouseX, 0.1);
+      this.currentY = lerp(this.currentY, this.mouseY, 0.1);
+
+      if (this.cursorGlow) {
+        this.cursorGlow.style.left = `${this.currentX}px`;
+        this.cursorGlow.style.top = `${this.currentY}px`;
+      }
+
+      requestAnimationFrame(() => this.animate());
     }
   }
 
   // ============================================
   // PERFORMANCE MONITORING
   // ============================================
-
   class PerformanceMonitor {
     constructor() {
       this.enabled = 'performance' in window;
@@ -555,8 +541,6 @@
           if (perfData && console.table) {
             console.group('🚀 Performance Metrics');
             console.table({
-              'DNS Lookup': `${(perfData.domainLookupEnd - perfData.domainLookupStart).toFixed(2)}ms`,
-              'TCP Connection': `${(perfData.connectEnd - perfData.connectStart).toFixed(2)}ms`,
               'DOM Load': `${(perfData.domContentLoadedEventEnd - perfData.domContentLoadedEventStart).toFixed(2)}ms`,
               'Page Load': `${(perfData.loadEventEnd - perfData.loadEventStart).toFixed(2)}ms`,
               'Total Time': `${(perfData.loadEventEnd - perfData.fetchStart).toFixed(2)}ms`
@@ -569,9 +553,8 @@
   }
 
   // ============================================
-  // INITIALIZATION
+  // INITIALIZATION CONTROLLER
   // ============================================
-
   class AnimationController {
     constructor() {
       this.modules = [];
@@ -588,17 +571,20 @@
     }
 
     initModules() {
-      console.log('🎨 Initializing MomEase Animations');
+      console.log('🎨 Initializing MomEase Animations v2.0');
 
       // Initialize all animation modules
-      this.modules.push(new LazyLoader());
+      this.modules.push(new HeroSlideshow());
+      this.modules.push(new HeroAnimation());
       this.modules.push(new ScrollReveal());
-      this.modules.push(new StaggerAnimation());
       this.modules.push(new ParallaxEffect());
-      this.modules.push(new HoverTilt());
       this.modules.push(new NavbarScroll());
       this.modules.push(new SmoothScroll());
-      this.modules.push(new GSAPAnimations());
+      this.modules.push(new StaggerAnimation());
+      this.modules.push(new CardHoverEffects());
+      this.modules.push(new ButtonHoverEffects());
+      this.modules.push(new LazyLoader());
+      this.modules.push(new CursorGlow());
 
       // Performance monitoring (development only)
       if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
@@ -609,7 +595,7 @@
       console.log('✅ Animations initialized successfully');
     }
 
-    // Public method to refresh animations (useful for dynamic content)
+    // Public method to refresh animations
     refresh() {
       this.modules.forEach(module => {
         if (module.init && typeof module.init === 'function') {
@@ -620,12 +606,21 @@
   }
 
   // ============================================
+  // RESIZE HANDLER
+  // ============================================
+  const handleResize = debounce(() => {
+    CONFIG.isMobile = window.innerWidth < 768;
+  }, 250);
+
+  window.addEventListener('resize', handleResize);
+
+  // ============================================
   // EXPOSE TO GLOBAL SCOPE
   // ============================================
-
   window.MomEaseAnimations = new AnimationController();
 
   // Expose refresh method for dynamic content
   window.refreshAnimations = () => window.MomEaseAnimations.refresh();
 
 })();
+
