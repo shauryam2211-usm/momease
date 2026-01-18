@@ -1,40 +1,41 @@
 /**
- * MomEase Animations - Production Grade Animation System
- *
- * Architecture: BEM methodology for maintainability
- * Performance: GPU-accelerated transforms, will-change hints
- * Accessibility: Full prefers-reduced-motion support
+ * MomEase Animations - Premium Apple-Style Animation System
+ * Black/Pink Theme with Glassmorphism
  *
  * @author MomEase Team
- * @version 1.0.0
+ * @version 2.0.0
  */
 
 /* ============================================
-   CSS CUSTOM PROPERTIES (Design Tokens)
+   CSS CUSTOM PROPERTIES
    ============================================ */
 :root {
-  /* Animation Timing - More dramatic */
+  /* Colors - Black/Pink Theme */
+  --color-black: #000000;
+  --color-pink-primary: #FF45B1;
+  --color-pink-secondary: #FF1493;
+  --color-pink-glow: rgba(255, 69, 177, 0.4);
+  --color-white: #FFFFFF;
+  --color-grey-light: #E5E5E5;
+  --color-grey-medium: #B0B0B0;
+  --color-grey-dark: #808080;
+
+  /* Animation Timing - Apple-style smooth */
   --ease-smooth: cubic-bezier(0.4, 0.0, 0.2, 1);
-  --ease-enter: cubic-bezier(0.0, 0.0, 0.2, 1);
-  --ease-exit: cubic-bezier(0.4, 0.0, 1, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-out: cubic-bezier(0.33, 1, 0.68, 1);
   --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  --ease-dramatic: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
-  /* Duration - Slower for more noticeable animations */
-  --duration-fast: 300ms;
-  --duration-normal: 600ms;
-  --duration-slow: 900ms;
-  --duration-slower: 1200ms;
+  /* Duration */
+  --duration-fast: 200ms;
+  --duration-normal: 400ms;
+  --duration-slow: 600ms;
+  --duration-slower: 800ms;
 
-  /* Delays for stagger effects - More spaced */
-  --delay-1: 150ms;
-  --delay-2: 300ms;
-  --delay-3: 450ms;
-  --delay-4: 600ms;
-
-  /* Transform distances - Larger movements */
-  --translate-distance: 100px;
-  --translate-distance-sm: 50px;
+  /* Transform distances */
+  --translate-distance: 60px;
+  --translate-distance-sm: 30px;
 }
 
 /* ============================================
@@ -49,20 +50,11 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-
-  /* Disable parallax and complex transforms */
-  .parallax,
-  .float,
-  .hover-tilt {
-    transform: none !important;
-  }
 }
 
 /* ============================================
    BASE ANIMATION UTILITIES
    ============================================ */
-
-/* GPU Acceleration Hint - Applied to animated elements */
 .will-animate {
   will-change: transform, opacity;
 }
@@ -72,10 +64,128 @@
 }
 
 /* ============================================
-   FADE ANIMATIONS
+   HERO SLIDESHOW ANIMATIONS
    ============================================ */
 
-/* Fade In */
+/* Premium gradient background for empty space around images */
+.hero-slideshow {
+  background: radial-gradient(
+    circle at 30% 50%,
+    rgba(255, 69, 177, 0.3) 0%,
+    rgba(0, 0, 0, 0.9) 50%,
+    #000000 100%
+  );
+}
+
+/* Ken Burns effect - subtle zoom */
+@keyframes kenBurns {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes kenBurnsMobile {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Slideshow fade transition */
+.hero-slide {
+  transition: opacity 1.5s ease-in-out;
+  /* Use contain to show full product images without cropping */
+  background-size: contain !important;
+  background-position: center !important;
+}
+
+.hero-slide.active {
+  animation: kenBurns 8s ease-out infinite;
+}
+
+/* Mobile optimization */
+@media (max-width: 768px) {
+  .hero-slide.active {
+    animation: kenBurnsMobile 8s ease-out infinite;
+  }
+  
+  /* Adjusted gradient for mobile */
+  .hero-slideshow {
+    background: radial-gradient(
+      circle at 50% 50%,
+      rgba(255, 69, 177, 0.25) 0%,
+      rgba(0, 0, 0, 0.95) 60%,
+      #000000 100%
+    );
+  }
+}
+
+/* ============================================
+   SCROLL REVEAL ANIMATIONS
+   ============================================ */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(var(--translate-distance-sm));
+  transition: opacity var(--duration-slow) var(--ease-out),
+              transform var(--duration-slow) var(--ease-out);
+}
+
+.scroll-reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Scroll Reveal Variants */
+.scroll-reveal-left {
+  opacity: 0;
+  transform: translateX(-60px);
+}
+
+.scroll-reveal-left.active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity var(--duration-slow) var(--ease-out),
+              transform var(--duration-slow) var(--ease-out);
+}
+
+.scroll-reveal-right {
+  opacity: 0;
+  transform: translateX(60px);
+}
+
+.scroll-reveal-right.active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity var(--duration-slow) var(--ease-out),
+              transform var(--duration-slow) var(--ease-out);
+}
+
+.scroll-reveal-scale {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.scroll-reveal-scale.active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity var(--duration-slow) var(--ease-out),
+              transform var(--duration-slow) var(--ease-out);
+}
+
+/* ============================================
+   FADE ANIMATIONS
+   ============================================ */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -85,28 +195,17 @@
   }
 }
 
-.anim-fade-in {
-  animation: fadeIn var(--duration-normal) var(--ease-smooth) forwards;
-}
-
-/* Fade In Up - Premium entrance animation with dramatic effect */
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(var(--translate-distance)) scale(0.9);
+    transform: translateY(var(--translate-distance));
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
-.anim-fade-in-up {
-  animation: fadeInUp var(--duration-slow) var(--ease-dramatic) forwards;
-  opacity: 0;
-}
-
-/* Fade In Down */
 @keyframes fadeInDown {
   from {
     opacity: 0;
@@ -118,12 +217,6 @@
   }
 }
 
-.anim-fade-in-down {
-  animation: fadeInDown var(--duration-slow) var(--ease-smooth) forwards;
-  opacity: 0;
-}
-
-/* Fade In Scale - Used for images */
 @keyframes fadeInScale {
   from {
     opacity: 0;
@@ -135,94 +228,59 @@
   }
 }
 
+.anim-fade-in {
+  animation: fadeIn var(--duration-slow) var(--ease-smooth) forwards;
+}
+
+.anim-fade-in-up {
+  animation: fadeInUp var(--duration-slow) var(--ease-out) forwards;
+}
+
+.anim-fade-in-down {
+  animation: fadeInDown var(--duration-slow) var(--ease-out) forwards;
+}
+
 .anim-fade-in-scale {
-  animation: fadeInScale var(--duration-slower) var(--ease-smooth) forwards;
-  opacity: 0;
+  animation: fadeInScale var(--duration-slower) var(--ease-out) forwards;
 }
 
 /* ============================================
-   SCROLL-TRIGGERED ANIMATIONS
+   PARALLAX EFFECTS
    ============================================ */
-
-/* Base state for scroll animations - invisible until triggered */
-.scroll-reveal {
-  opacity: 0;
-  transform: translateY(var(--translate-distance-sm));
-  transition: opacity var(--duration-slow) var(--ease-smooth),
-              transform var(--duration-slow) var(--ease-smooth);
-}
-
-.scroll-reveal--active {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Scroll Reveal from Left */
-.scroll-reveal--left {
-  opacity: 0;
-  transform: translateX(calc(-1 * var(--translate-distance)));
-}
-
-.scroll-reveal--left.scroll-reveal--active {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-/* Scroll Reveal from Right */
-.scroll-reveal--right {
-  opacity: 0;
-  transform: translateX(var(--translate-distance));
-}
-
-.scroll-reveal--right.scroll-reveal--active {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-/* Scroll Reveal Scale */
-.scroll-reveal--scale {
-  opacity: 0;
-  transform: scale(0.95);
-}
-
-.scroll-reveal--scale.scroll-reveal--active {
-  opacity: 1;
-  transform: scale(1);
+.parallax {
+  transition: transform 0.1s linear;
+  will-change: transform;
 }
 
 /* ============================================
-   STAGGER ANIMATIONS (For sequential reveals)
+   GLOW EFFECTS
    ============================================ */
-
-.stagger-item {
-  opacity: 0;
-  transform: translateY(var(--translate-distance-sm));
+.glow-pink {
+  box-shadow: 0 0 40px var(--color-pink-glow);
+  transition: box-shadow var(--duration-normal) var(--ease-smooth);
 }
 
-.stagger-item--1 { transition-delay: var(--delay-1); }
-.stagger-item--2 { transition-delay: var(--delay-2); }
-.stagger-item--3 { transition-delay: var(--delay-3); }
-.stagger-item--4 { transition-delay: var(--delay-4); }
+.glow-pink:hover {
+  box-shadow: 0 0 60px rgba(255, 69, 177, 0.6);
+}
 
-.stagger-item.stagger-item--active {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity var(--duration-slow) var(--ease-smooth),
-              transform var(--duration-slow) var(--ease-smooth);
+/* Text glow */
+.text-glow {
+  text-shadow: 0 0 20px rgba(255, 69, 177, 0.5),
+               0 0 40px rgba(255, 69, 177, 0.3);
 }
 
 /* ============================================
-   HOVER MICRO-INTERACTIONS
+   BUTTON ANIMATIONS
    ============================================ */
-
-/* Button Hover - More dramatic lift effect with shimmer */
 .btn-hover {
   position: relative;
   overflow: hidden;
-  transition: transform var(--duration-fast) var(--ease-smooth),
-              box-shadow var(--duration-fast) var(--ease-smooth);
+  transition: transform var(--duration-normal) var(--ease-smooth),
+              box-shadow var(--duration-normal) var(--ease-smooth);
 }
 
+/* Shimmer effect */
 .btn-hover::before {
   content: '';
   position: absolute;
@@ -230,8 +288,8 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-  transition: left 0.5s ease;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.6s ease;
 }
 
 .btn-hover:hover::before {
@@ -239,52 +297,39 @@
 }
 
 .btn-hover:hover {
-  transform: translateY(-6px) scale(1.05);
-  box-shadow: 0 15px 35px rgba(236, 72, 153, 0.5),
-              0 0 20px rgba(255, 69, 177, 0.3);
+  transform: translateY(-3px) scale(1.02);
 }
 
 .btn-hover:active {
-  transform: translateY(-2px) scale(1.02);
+  transform: translateY(-1px) scale(0.98);
+  transition-duration: 100ms;
 }
 
-/* Card Hover - More dramatic lift with shadow */
+/* ============================================
+   CARD ANIMATIONS
+   ============================================ */
 .card-hover {
   transition: transform var(--duration-normal) var(--ease-smooth),
               box-shadow var(--duration-normal) var(--ease-smooth);
 }
 
 .card-hover:hover {
-  transform: translateY(-16px) scale(1.03);
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
-}
-
-/* Image Hover - More noticeable scale */
-.image-hover {
-  overflow: hidden;
-  position: relative;
-}
-
-.image-hover img {
-  transition: transform var(--duration-slow) var(--ease-smooth);
-  will-change: transform;
-}
-
-.image-hover:hover img {
-  transform: scale(1.15) rotate(2deg);
-}
-
-/* Hover Tilt Effect - Premium 3D tilt */
-.hover-tilt {
-  transition: transform var(--duration-normal) var(--ease-smooth);
-  transform-style: preserve-3d;
+  transform: translateY(-12px) scale(1.02);
 }
 
 /* ============================================
    FLOATING ANIMATIONS
    ============================================ */
-
 @keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes floatSlow {
   0%, 100% {
     transform: translateY(0);
   }
@@ -294,31 +339,16 @@
 }
 
 .anim-float {
-  animation: float 2.5s var(--ease-smooth) infinite;
+  animation: float 3s var(--ease-in-out) infinite;
 }
 
-.anim-float--slow {
-  animation: float 3.5s var(--ease-smooth) infinite;
-}
-
-/* Floating with rotation - For decorative elements */
-@keyframes floatRotate {
-  0%, 100% {
-    transform: translateY(0) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-20px) rotate(5deg);
-  }
-}
-
-.anim-float-rotate {
-  animation: floatRotate 4s var(--ease-smooth) infinite;
+.anim-float-slow {
+  animation: floatSlow 4s var(--ease-in-out) infinite;
 }
 
 /* ============================================
    PULSE ANIMATIONS
    ============================================ */
-
 @keyframes pulse {
   0%, 100% {
     transform: scale(1);
@@ -326,15 +356,10 @@
   }
   50% {
     transform: scale(1.05);
-    opacity: 0.8;
+    opacity: 0.9;
   }
 }
 
-.anim-pulse {
-  animation: pulse 2s var(--ease-smooth) infinite;
-}
-
-/* Subtle pulse for attention */
 @keyframes pulseSubtle {
   0%, 100% {
     transform: scale(1);
@@ -344,23 +369,34 @@
   }
 }
 
+.anim-pulse {
+  animation: pulse 2s var(--ease-in-out) infinite;
+}
+
 .anim-pulse-subtle {
-  animation: pulseSubtle 2s var(--ease-smooth) infinite;
+  animation: pulseSubtle 2s var(--ease-in-out) infinite;
 }
 
 /* ============================================
-   PARALLAX EFFECTS (Applied via JS)
+   GRADIENT ANIMATIONS
    ============================================ */
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
 
-.parallax {
-  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  will-change: transform;
+.anim-gradient {
+  background-size: 200% 200%;
+  animation: gradientShift 6s var(--ease-in-out) infinite;
 }
 
 /* ============================================
-   LOADING & SHIMMER EFFECTS
+   SHIMMER EFFECTS
    ============================================ */
-
 @keyframes shimmer {
   0% {
     background-position: -1000px 0;
@@ -374,7 +410,7 @@
   background: linear-gradient(
     90deg,
     rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.4) 50%,
+    rgba(255, 255, 255, 0.2) 50%,
     rgba(255, 255, 255, 0) 100%
   );
   background-size: 1000px 100%;
@@ -382,76 +418,35 @@
 }
 
 /* ============================================
-   GRADIENT ANIMATIONS
+   IMAGE HOVER EFFECTS
    ============================================ */
-
-@keyframes gradientShift {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-}
-
-.anim-gradient {
-  background-size: 200% 200%;
-  animation: gradientShift 8s var(--ease-smooth) infinite;
-}
-
-/* ============================================
-   TEXT REVEAL ANIMATIONS
-   ============================================ */
-
-/* Character-by-character reveal (applied via JS) */
-.text-reveal {
+.image-hover {
   overflow: hidden;
+  border-radius: 16px;
 }
 
-.text-reveal__char {
-  display: inline-block;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity var(--duration-normal) var(--ease-smooth),
-              transform var(--duration-normal) var(--ease-smooth);
+.image-hover img {
+  transition: transform var(--duration-slower) var(--ease-out);
+  will-change: transform;
 }
 
-.text-reveal__char--active {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Word-by-word reveal */
-.text-reveal__word {
-  display: inline-block;
-  opacity: 0;
-  transform: translateY(10px);
-}
-
-.text-reveal__word--active {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity var(--duration-slow) var(--ease-smooth),
-              transform var(--duration-slow) var(--ease-smooth);
+.image-hover:hover img {
+  transform: scale(1.1);
 }
 
 /* ============================================
    NAVBAR ANIMATIONS
    ============================================ */
-
-/* Navbar scroll effect */
 .nav-scrolled {
-  background-color: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
-  transition: background-color var(--duration-normal) var(--ease-smooth),
-              box-shadow var(--duration-normal) var(--ease-smooth);
+  background-color: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 4px 30px rgba(255, 69, 177, 0.1);
+  transition: all var(--duration-normal) var(--ease-smooth);
 }
 
-/* Navbar link hover effect */
+/* Nav link underline effect */
 .nav-link {
   position: relative;
-  transition: color var(--duration-fast) var(--ease-smooth);
 }
 
 .nav-link::after {
@@ -461,7 +456,7 @@
   left: 0;
   width: 0;
   height: 2px;
-  background: currentColor;
+  background: linear-gradient(90deg, var(--color-pink-primary), var(--color-pink-secondary));
   transition: width var(--duration-normal) var(--ease-smooth);
 }
 
@@ -470,9 +465,47 @@
 }
 
 /* ============================================
+   STAGGER ANIMATIONS
+   ============================================ */
+.stagger-item {
+  opacity: 0;
+  transform: translateY(var(--translate-distance-sm));
+}
+
+.stagger-item.active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity var(--duration-slow) var(--ease-out),
+              transform var(--duration-slow) var(--ease-out);
+}
+
+/* Stagger delays */
+.stagger-delay-1 { transition-delay: 100ms; }
+.stagger-delay-2 { transition-delay: 200ms; }
+.stagger-delay-3 { transition-delay: 300ms; }
+.stagger-delay-4 { transition-delay: 400ms; }
+.stagger-delay-5 { transition-delay: 500ms; }
+
+/* ============================================
+   GLASSMORPHISM
+   ============================================ */
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
    MODAL & OVERLAY ANIMATIONS
    ============================================ */
-
 @keyframes fadeInOverlay {
   from {
     opacity: 0;
@@ -498,7 +531,32 @@
 }
 
 .modal-enter {
-  animation: slideUpModal var(--duration-slow) var(--ease-bounce) forwards;
+  animation: slideUpModal var(--duration-slow) var(--ease-spring) forwards;
+}
+
+/* ============================================
+   ICON ANIMATIONS
+   ============================================ */
+@keyframes iconBounce {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-8px) scale(1.05);
+  }
+}
+
+.icon-bounce {
+  animation: iconBounce 2s ease-in-out infinite;
+}
+
+/* Icon rotation on hover */
+.icon-rotate {
+  transition: transform var(--duration-normal) var(--ease-smooth);
+}
+
+.icon-rotate:hover {
+  transform: rotate(360deg);
 }
 
 /* ============================================
@@ -525,82 +583,38 @@
 /* ============================================
    PERFORMANCE OPTIMIZATIONS
    ============================================ */
-
-/* Prevent layout shifts during animations */
 .prevent-layout-shift {
   contain: layout;
 }
 
-/* Optimize repaints */
 .optimize-repaint {
   backface-visibility: hidden;
   perspective: 1000px;
 }
 
 /* ============================================
-   ICON ANIMATIONS
-   ============================================ */
-
-/* Pulse icon on card hover */
-.card-hover svg {
-  transition: transform var(--duration-normal) var(--ease-smooth);
-}
-
-.card-hover:hover svg {
-  transform: scale(1.2) rotate(5deg);
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
-}
-
-/* Bounce animation for icons */
-@keyframes iconBounce {
-  0%, 100% {
-    transform: translateY(0) scale(1);
-  }
-  50% {
-    transform: translateY(-10px) scale(1.1);
-  }
-}
-
-.icon-bounce {
-  animation: iconBounce 2s ease-in-out infinite;
-}
-
-/* ============================================
-   TEXT GLOW EFFECTS
-   ============================================ */
-
-.text-glow {
-  text-shadow: 0 0 20px rgba(255, 69, 177, 0.5),
-               0 0 40px rgba(255, 69, 177, 0.3);
-}
-
-/* ============================================
    RESPONSIVE ADJUSTMENTS
    ============================================ */
-
 @media (max-width: 768px) {
   :root {
-    --translate-distance: 60px;
-    --translate-distance-sm: 30px;
+    --translate-distance: 40px;
+    --translate-distance-sm: 20px;
   }
 
-  /* Reduce animation complexity on mobile */
-  .hover-tilt {
-    transform: none !important;
-  }
-
-  /* Adjust hover effects on touch devices */
+  /* Reduce animation intensity on mobile */
   .card-hover:hover {
-    transform: translateY(-8px) scale(1.02);
+    transform: translateY(-6px) scale(1.01);
+  }
+
+  .btn-hover:hover {
+    transform: translateY(-2px) scale(1.01);
   }
 }
 
 /* ============================================
    PRINT STYLES
    ============================================ */
-
 @media print {
-  /* Disable all animations for print */
   *,
   *::before,
   *::after {
